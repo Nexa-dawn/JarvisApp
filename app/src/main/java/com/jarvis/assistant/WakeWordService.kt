@@ -3,6 +3,7 @@ package com.jarvis.assistant
 import android.app.*
 import android.content.Intent
 import android.os.Build
+import android.os.Bundle
 import android.os.IBinder
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
@@ -13,7 +14,6 @@ import kotlinx.coroutines.*
 class WakeWordService : Service() {
     private lateinit var recognizer: SpeechRecognizer
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-    private var active = true
 
     override fun onCreate() {
         super.onCreate()
@@ -21,8 +21,8 @@ class WakeWordService : Service() {
         startForeground(1, buildNotification())
         recognizer = SpeechRecognizer.createSpeechRecognizer(this)
         recognizer.setRecognitionListener(object : RecognitionListener {
-            override fun onResults(r: Bundle?) {
-                val text = r?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+            override fun onResults(r: Bundle) {
+                val text = r.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                     ?.firstOrNull()?.lowercase() ?: ""
                 if (text.contains("jarvis")) {
                     sendBroadcast(Intent("com.jarvis.WAKE").apply { setPackage(packageName) })
@@ -30,13 +30,13 @@ class WakeWordService : Service() {
                 restart()
             }
             override fun onError(e: Int) { restart(1000) }
-            override fun onReadyForSpeech(p: android.os.Bundle?) {}
+            override fun onReadyForSpeech(p: Bundle) {}
             override fun onBeginningOfSpeech() {}
             override fun onBufferReceived(b: ByteArray?) {}
             override fun onEndOfSpeech() {}
-            override fun onEvent(t: Int, p: Bundle?) {}
-            override fun onPartialResults(p: android.os.Bundle?) {
-                val text = p?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+            override fun onEvent(t: Int, p: Bundle) {}
+            override fun onPartialResults(p: Bundle) {
+                val text = p.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                     ?.firstOrNull()?.lowercase() ?: ""
                 if (text.contains("jarvis")) {
                     recognizer.stopListening()
@@ -50,7 +50,6 @@ class WakeWordService : Service() {
     }
 
     private fun listen() {
-        if (!active) return
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "tr-TR")

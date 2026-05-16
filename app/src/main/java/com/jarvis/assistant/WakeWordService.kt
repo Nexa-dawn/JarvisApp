@@ -30,12 +30,12 @@ class WakeWordService : Service() {
                 restart()
             }
             override fun onError(e: Int) { restart(1000) }
-            override fun onReadyForSpeech(p: Bundle?) {}
+            override fun onReadyForSpeech(p: android.os.Bundle?) {}
             override fun onBeginningOfSpeech() {}
             override fun onBufferReceived(b: ByteArray?) {}
             override fun onEndOfSpeech() {}
             override fun onEvent(t: Int, p: Bundle?) {}
-            override fun onPartialResults(p: Bundle?) {
+            override fun onPartialResults(p: android.os.Bundle?) {
                 val text = p?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                     ?.firstOrNull()?.lowercase() ?: ""
                 if (text.contains("jarvis")) {
